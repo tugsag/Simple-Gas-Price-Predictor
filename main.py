@@ -19,6 +19,7 @@ prices['week'] = prices.index
 # print(prices.tail())
 
 x = prices[['week']].values
+# change val here for type of gas to predict
 y = prices[['A1']].values
 
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
@@ -46,11 +47,12 @@ def past_features(type):
     for i in range(16,len(x)):
         x_train.append(y[i-16:i])
         y_train.append(y[i])
-    return np.array(x_train), np.array(y_train)
+    next_week = [y[len(y)-15:]]
+    return np.array(x_train), np.array(y_train), np.array(next_week)
 
 def dl_regression():
     # custom data analysis
-    x_cust, y_cust = past_features('A1')
+    x_cust, y_cust, next_week = past_features('A1')
     x_train, y_train = x_cust[:int(len(x_cust)*0.85)], y_cust[:int(len(y_cust)*0.85)]
     x_test, y_test = x_cust[int(len(x_cust)*0.85):], y_cust[int(len(y_cust)*0.85):]
     model = keras.Sequential([layers.Dense(64, activation='relu'), layers.Dense(64, activation='relu'), layers.Dense(1)])
@@ -63,6 +65,8 @@ def dl_regression():
     # print(y_pred.mean(axis=1).shape)
     # print(y_test.shape)
     print('Test set: ', mean_squared_error(y_test, y_pred.mean(axis=1)))
+    next_y = model.predict(next_week)
+    print("next week: ", next_y.mean(axis=1))
    
     # plot_preds(y_test, y_pred)
     
