@@ -69,6 +69,22 @@ def dl_regression():
     print("next week: ", next_y.mean(axis=1))
    
     # plot_preds(y_test, y_pred)
+
+def rnn_regression():
+    x_cust, y_cust, next_week = past_features('A1')
+    x_train, y_train = x_cust[:int(len(x_cust)*0.85)], y_cust[:int(len(y_cust)*0.85)]
+    # print(x_train.shape)
+    x_test, y_test = x_cust[int(len(x_cust)*0.85):], y_cust[int(len(y_cust)*0.85):]
+    model = keras.Sequential([layers.LSTM(16, return_sequences=True), layers.Dropout(0.2), layers.LSTM(16), layers.Dense(1)])
+    model.compile(loss='mean_absolute_error', optimizer=keras.optimizers.Adam(0.001))
+    history = model.fit(x_train, y_train, validation_split=0.2, epochs=30, verbose=1)
+    losses = history.history['loss']
+    print('Avg loss: ', sum(losses)/len(losses))
+    y_pred = model.predict(x_test)
+    
+    print('Test set: ', mean_squared_error(y_test, y_pred.mean(axis=1)))
+    next_y = model.predict(next_week)
+    print("next week: ", next_y.mean(axis=1))
     
 
 def eval_models():
@@ -105,6 +121,7 @@ def use_best():
     plt.plot(next_week, pred, 'ro')
     plt.show()
 
-dl_regression()
+# dl_regression()
+rnn_regression()
 # best_model, best_score = eval_models()
 # use_best()
